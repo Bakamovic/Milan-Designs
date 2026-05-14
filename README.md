@@ -43,6 +43,17 @@ to the owner, and built a solution tailored to how the shop actually works.
 - Pandas
 - Power BI
 
+## Roadmap
+
+The following features are planned following an upcoming meeting with the owner:
+
+- UI redesign based on shop branding and owner feedback
+- Additional job tracking fields (vehicle details, registration, colour)
+- Customer database — store returning customers and job history
+- Invoice generation — export a PDF invoice per job
+- Material cost automation — link foil usage directly to job cost
+- Power BI dashboard refinement based on real usage data
+
 ## How to Run
 
 ```bash
