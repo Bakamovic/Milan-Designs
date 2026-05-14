@@ -223,7 +223,41 @@ with TAB_INV:
                 st.rerun()
         else:
             st.info("No rolls yet.")
-    st.header("Foil Inventory")
 
 with TAB_CHECKIN:
     st.header("Roll Check-in")
+    st.write("Place a roll on the scale, enter the weight and the app recalculates the remaining length.")
+
+    roll_opts = db.get_roll_options()
+
+    if not roll_opts:
+        st.warning("No rolls in inventory. Add rolls in the Foil Inventory tab first.")
+    else:
+        disp_map = {r["display"]: r["id"] for r in roll_opts}
+
+        with st.form("checkin_form", clear_on_submit=True):
+            chosen = st.selectbox("Select Roll", list(disp_map.keys()))
+            weight = st.number_input("Scale Reading (g)", min_value=0.0, step=0.1, format="%.1f")
+            ci_notes = st.text_input("Notes (optional)")
+            ci_btn = st.form_submit_button("Confirm Check-in")
+
+        if ci_btn:
+            try:
+                updated = db.update_foil_roll_weight(disp_map[chosen], weight, ci_notes or None)
+                nl = updated.calculated_length
+                if nl < 5:
+                    st.warning(f"Saved — but low stock: {nl:.2f} m remaining. Reorder soon.")
+                else:
+                    st.success(f"Updated — {nl:.2f} m remaining.")
+                st.rerun()
+            except ValueError as exc:
+                st.error(str(exc))
+
+        st.divider()
+        st.subheader("Current Stock")
+        rolls = db.read_all_foil_rolls()
+        if rolls:
+            st.dataframe(
+                pd.DataFrame(rolls)[["Roll ID", "Label", "Material", "Calculated Length (m)", "Last Checked"]],
+                height=300,
+            )
