@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import database as db
+import reporting
 from datetime import date
 
 st.set_page_config(
@@ -12,7 +13,7 @@ db.init_db()
 
 st.title("Milan Designs")
 
-TAB_JOBS, TAB_INV, TAB_CALIB, TAB_CHECKIN = st.tabs(["Jobs", "Foil Inventory", "Calibration", "Roll Check-in"])
+TAB_JOBS, TAB_INV, TAB_CALIB, TAB_CHECKIN, TAB_PBI = st.tabs(["Jobs", "Foil Inventory", "Calibration", "Roll Check-in", "Power BI Export"])
 
 with TAB_JOBS:
     st.header("Jobs")
@@ -261,3 +262,50 @@ with TAB_CHECKIN:
                 pd.DataFrame(rolls)[["Roll ID", "Label", "Material", "Calculated Length (m)", "Last Checked"]],
                 height=300,
             )
+with TAB_PBI:
+    st.header("Power BI Export")
+
+    kpi = reporting.get_kpi_snapshot()
+
+    k1, k2, k3, k4, k5 = st.columns(5)
+    k1.metric("Jobs",          kpi["job_count"])
+    k2.metric("Revenue",       f"€ {kpi['total_revenue']:,.2f}")
+    k3.metric("Total Costs",   f"€ {kpi['total_costs']:,.2f}")
+    k4.metric("Gross Profit",  f"€ {kpi['gross_profit']:,.2f}")
+    k5.metric("Margin %",      f"{kpi['margin_pct']:.1f} %")
+
+    st.divider()
+    st.subheader("Weekly Summary")
+    weekly = reporting.build_summary_weekly()
+    if not weekly.empty:
+        st.dataframe(weekly, height=300)
+    else:
+        st.info("No data yet.")
+
+    st.divider()
+    st.subheader("Monthly Summary")
+    monthly = reporting.build_summary_monthly()
+    if not monthly.empty:
+        st.dataframe(monthly, height=300)
+    else:
+        st.info("No data yet.")
+
+    st.divider()
+    st.subheader("Download for Power BI")
+    if st.button("Generate Export File"):
+        with st.spinner("Building workbook..."):
+            try:
+                st.session_state["pbi_bytes"] = reporting.export_to_excel()
+                st.success("Ready to download.")
+            except Exception as exc:
+                st.error(f"Export failed: {exc}")
+
+    if "pbi_bytes" in st.session_state:
+        from datetime import datetime
+        filename = f"milan_designs_{datetime.today().strftime('%Y%m%d')}.xlsx"
+        st.download_button(
+            label="Download .xlsx",
+            data=st.session_state["pbi_bytes"],
+            file_name=filename,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )            
