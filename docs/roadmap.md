@@ -86,3 +86,7 @@ Features planned for future development, ordered by priority.
 | Foil type calibration | Live |
 | Roll check-in workflow | Live |
 | Power BI Excel export | Live |
+| Customer database | Live — customers table, FK on jobs, customer profile view |
+| User login & role-based access | Live — Admin / Milan / Worker roles with undo system |
+| Manufacturer color catalog | Live — Oracal 651/970RA, Avery SW900, 3M 2080 per-product dropdowns |
+| In-app Overview charts | Live — weekly/monthly revenue & profit bar charts |

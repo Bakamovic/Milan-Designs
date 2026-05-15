@@ -33,6 +33,82 @@ FOIL_BRANDS = {
     "Arlon": ["3000", "SLX"],
 }
 
+FOIL_COLORS = {
+    "Oracal": {
+        "651": [
+            ("000", "Transparent"), ("010", "White"), ("019", "Signal Yellow"),
+            ("020", "Golden Yellow"), ("021", "Yellow"), ("022", "Light Yellow"),
+            ("023", "Cream"), ("025", "Brimstone Yellow"), ("026", "Purple Red"),
+            ("030", "Dark Red"), ("031", "Red"), ("032", "Light Red"),
+            ("034", "Orange"), ("035", "Pastel Orange"), ("036", "Light Orange"),
+            ("040", "Violet"), ("041", "Pink"), ("042", "Lilac"),
+            ("043", "Lavender"), ("045", "Soft Pink"), ("047", "Orange Red"),
+            ("049", "King Blue"), ("050", "Dark Blue"), ("051", "Gentian Blue"),
+            ("052", "Azure Blue"), ("053", "Light Blue"), ("054", "Turquoise"),
+            ("055", "Mint"), ("056", "Ice Blue"), ("057", "Traffic Blue"),
+            ("060", "Dark Green"), ("061", "Green"), ("062", "Light Green"),
+            ("063", "Lime Tree Green"), ("064", "Yellow Green"), ("065", "Cobalt Blue"),
+            ("066", "Turquoise Blue"), ("067", "Blue"), ("070", "Black"),
+            ("071", "Grey"), ("072", "Light Grey"), ("073", "Dark Grey"),
+            ("074", "Middle Grey"), ("076", "Telegrey"), ("080", "Brown"),
+            ("081", "Light Brown"), ("082", "Beige"), ("083", "Nut Brown"),
+            ("090", "Silver Metallic"), ("091", "Gold Metallic"),
+            ("092", "Copper Metallic"), ("093", "Anthracite"),
+        ],
+        "970RA": [
+            ("010G", "White Gloss"), ("010M", "White Matte"), ("022G", "Light Yellow"),
+            ("028G", "Cardinal Red"), ("032G", "Light Red"), ("055M", "Mint Matte"),
+            ("070M", "Matte Black"), ("076M", "Matte Telegrey"),
+            ("181G", "Sparkling Riviera Rush"), ("209G", "Maize Yellow"),
+            ("223M", "Saffron Yellow Matte"), ("285M", "Nato Olive Matte"),
+            ("317", "Avocado"), ("318", "Aquamarine"), ("320", "Cranberry"),
+            ("547M", "Fjord Blue Matte"), ("553M", "Lagoon Matte"),
+            ("809G", "Taxibeige"), ("905M", "Matte Black Galactic Gold"),
+            ("920G", "Bronze"), ("921G", "Bronze Antique"), ("945", "Crystal White"),
+            ("959", "Tangerine Dream"), ("961", "Luscious Lips"),
+            ("963", "Jetstream Blue"), ("988", "Green Blue Shift"),
+            ("989", "Turquoise Lavender"), ("990", "Aubergine Bronze"),
+            ("992", "Pearl Green"),
+        ],
+    },
+    "Avery": {
+        "SW900": [
+            ("SW900-101-O", "Gloss White"), ("SW900-102-O", "Gloss White Pearl"),
+            ("SW900-180-O", "Gloss Dark Grey"), ("SW900-190-O", "Gloss Black"),
+            ("SW900-196-O", "Gloss Metallic Black Rock Grey"),
+            ("SW900-201-O", "Gloss Silver"), ("SW900-202-O", "Gloss Charcoal Metallic"),
+            ("SW900-211-O", "Gloss Lemon Sting Yellow"), ("SW900-222-O", "Gloss Yellow"),
+            ("SW900-251-O", "Gloss Orange"), ("SW900-315-O", "Gloss Carmine Red"),
+            ("SW900-318-O", "Gloss Red"), ("SW900-326-O", "Gloss Dark Red"),
+            ("SW900-416-O", "Gloss Blue"), ("SW900-601-O", "Gloss Light Blue"),
+            ("SW900-632-O", "Gloss Aqua Blue"), ("SW900-643-O", "Gloss Intense Blue"),
+            ("SW900-652-O", "Gloss Dark Blue"), ("SW900-672-O", "Gloss Metallic Blue"),
+            ("SW900-722-O", "Gloss Green Apple"), ("SW900-731-O", "Gloss Green"),
+            ("SW900-742-O", "Gloss Dark Green"), ("SW900-801-O", "Gloss Brown"),
+            ("SW900-820-O", "Gloss Beige"), ("SW900-901-O", "Gloss Purple"),
+            ("SW900-905-O", "Gloss Pink"),
+        ],
+    },
+    "3M": {
+        "2080": [
+            ("G10", "Gloss White"), ("G12", "Gloss Black"), ("G13", "Gloss Hot Rod Red"),
+            ("G14", "Gloss Burnt Orange"), ("G15", "Gloss Bright Yellow"),
+            ("G16", "Gloss Light Green"), ("G25", "Gloss Sunflower"),
+            ("G31", "Gloss Storm Gray"), ("G54", "Gloss Bright Orange"),
+            ("G55", "Gloss Lucid Yellow"), ("G77", "Gloss Sky Blue"),
+            ("G79", "Gloss Light Ivory"), ("G83", "Gloss Dark Red"),
+            ("G103", "Gloss Hot Pink"), ("G120", "Gloss White Aluminum"),
+            ("G127", "Gloss Boat Blue"), ("G201", "Gloss Silver Metallic"),
+            ("G203", "Gloss Red Metallic"), ("G212", "Gloss Black Metallic"),
+            ("G217", "Gloss Deep Blue Metallic"), ("M10", "Matte White"),
+            ("M12", "Matte Black"), ("M21", "Matte Silver"), ("M22", "Matte Deep Black"),
+            ("S10", "Satin White"), ("S12", "Satin Black"),
+            ("CFS12", "Black Carbon Fiber"), ("BR120", "Brushed Aluminum"),
+            ("SP236", "Satin Flip Volcanic Flare"), ("SP242", "Satin Flip Psychedelic"),
+        ],
+    },
+}
+
 
 class Customer(Base):
     __tablename__ = "customers"
@@ -489,7 +565,7 @@ def get_roll_options():
                 "label":   r.roll_label or f"Roll #{r.roll_id}",
                 "material":r.material_name,
                 "length":  r.calculated_length,
-                "display": f"{'[LOW] ' if r.calculated_length < 5 else ''}[{r.roll_id}] {r.roll_label or r.material_name} ({r.calculated_length:.2f}m)",
+                "display": f"{'⚠ Low stock — ' if r.calculated_length < 5 else ''}{r.roll_label or r.material_name} — {r.calculated_length:.2f} m left",
             }
             for r in rows
         ]
