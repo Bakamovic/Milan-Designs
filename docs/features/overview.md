@@ -1,20 +1,20 @@
-# Power BI Export
+# Overview
 
 ## What It Does
 
-The Power BI Export tab is a data pipeline. It packages all job and inventory data into a structured Excel workbook that gets loaded into Power BI Desktop for analysis and dashboarding. The tab also shows a quick KPI summary and weekly/monthly tables as a sanity check before you export.
+The Overview tab is a data pipeline and quick summary. It shows current KPI cards, weekly and monthly bar charts, and collapsible detail tables — and lets you export everything to a structured Excel workbook for Power BI Desktop.
 
 ---
 
 ## Why It Exists
 
-The app's job is clean data entry and management — it is not an analytics tool. Power BI handles all charting, trend analysis, and business reporting. The export tab is the bridge between the two: it normalises the raw data into analysis-ready sheets with date dimension columns added, so Power BI can connect without transformation work.
+The app's job is clean data entry and management — it is not an analytics tool. Power BI handles all charting, trend analysis, and business reporting. The Overview tab is the bridge between the two: it normalises the raw data into analysis-ready sheets with date dimension columns added, so Power BI can connect without transformation work.
 
 ---
 
 ## How It Works
 
-### KPI Snapshot ([app.py:268–275](../../app.py))
+### KPI Snapshot
 
 Five metric cards at the top of the tab show a current snapshot of all-time data:
 
@@ -26,24 +26,24 @@ Five metric cards at the top of the tab show a current snapshot of all-time data
 | Gross Profit | Revenue − Total Costs |
 | Margin % | Gross Profit / Revenue × 100 |
 
-These are calculated fresh from the database on every page load via `get_kpi_snapshot()` ([reporting.py:103–123](../../reporting.py)). They are a quick check — not meant to replace Power BI analysis.
+These are calculated fresh from the database on every page load via `get_kpi_snapshot()` in `reporting.py`. They are a quick check — not meant to replace Power BI analysis.
 
-### Weekly and Monthly Previews ([app.py:278–291](../../app.py))
+### Weekly and Monthly Charts
 
-Two preview tables let you verify the data before exporting:
+Below the KPI cards, two bar charts show revenue over time:
 
-- **Weekly** — jobs grouped by ISO week (`YYYY-Www` label), with job count, revenue, cost breakdown, profit, and margin
-- **Monthly** — same groupings by calendar month
+- **Revenue by Week** — one bar per ISO week
+- **Revenue by Month** — one bar per calendar month
 
-Both are calculated by `build_summary_weekly()` and `build_summary_monthly()` in [reporting.py](../../reporting.py).
+Below each chart is a collapsible detail table with job count, revenue, cost breakdown, profit, and margin for that period. Both datasets are calculated by `build_summary_weekly()` and `build_summary_monthly()` in `reporting.py`.
 
-### Generating the Export ([app.py:294–309](../../app.py))
+### Generating the Export
 
 Click "Generate Export File" to build the workbook in memory. When it's ready, a Download button appears. The filename includes today's date: `milan_designs_YYYYMMDD.xlsx`.
 
 The workbook is cached in `st.session_state["pbi_bytes"]` so clicking Download multiple times doesn't re-run the query.
 
-### Workbook Structure ([reporting.py:126–138](../../reporting.py))
+### Workbook Structure
 
 The `.xlsx` file contains four sheets:
 
@@ -60,15 +60,15 @@ All date columns are formatted `YYYY-MM-DD` for Power BI compatibility.
 
 ## Key Code Locations
 
-| What | File | Lines |
-|------|------|-------|
-| `get_kpi_snapshot()` | [reporting.py](../../reporting.py) | 103–123 |
-| `build_fact_jobs()` | [reporting.py](../../reporting.py) | 18–39 |
-| `build_summary_weekly()` | [reporting.py](../../reporting.py) | 42–61 |
-| `build_summary_monthly()` | [reporting.py](../../reporting.py) | 64–83 |
-| `build_dim_foil_inventory()` | [reporting.py](../../reporting.py) | 86–100 |
-| `export_to_excel()` | [reporting.py](../../reporting.py) | 126–138 |
-| UI — export tab | [app.py](../../app.py) | 265–310 |
+| What | File |
+|------|------|
+| `get_kpi_snapshot()` | `reporting.py` |
+| `build_fact_jobs()` | `reporting.py` |
+| `build_summary_weekly()` | `reporting.py` |
+| `build_summary_monthly()` | `reporting.py` |
+| `build_dim_foil_inventory()` | `reporting.py` |
+| `export_to_excel()` | `reporting.py` |
+| UI — Overview tab | `app.py` |
 
 ---
 

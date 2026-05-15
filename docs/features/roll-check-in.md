@@ -35,7 +35,7 @@ If the recalculated length is below 5 metres, a yellow warning is shown after sa
 
 > *"Saved — but low stock: X.XX m remaining. Reorder soon."*
 
-The roll is also flagged as `[LOW]` in the dropdown on the next check-in so it's visible before you even commit the update.
+The roll also gets a `⚠ Low stock —` prefix in the dropdown on the next check-in so it's visible before you even commit the update.
 
 ### Current Stock View ([app.py:258–264](../../app.py))
 
@@ -64,4 +64,4 @@ Below the check-in form is a quick table showing all rolls with their current re
 ## Related Features
 
 - [Foil Inventory](foil-inventory.md) — adds rolls; check-in updates them
-- [Calibration](calibration.md) — provides the `core_weight` and `unit_weight` used in recalculation
+- [Calibration](foil-types.md) — provides the `core_weight` and `unit_weight` used in recalculation

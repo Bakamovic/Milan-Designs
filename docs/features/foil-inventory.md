@@ -30,12 +30,12 @@ The formula raises a `ValueError` if `total_weight` is less than `core_weight` (
 
 ### Adding a Roll ([app.py:183–206](../../app.py))
 
-Before adding a roll, you must have at least one foil type configured in the [Calibration](calibration.md) tab.
+Before adding a roll, you must have at least one foil type configured in the [Calibration](foil-types.md) tab.
 
 | Field | Required | Notes |
 |-------|----------|-------|
 | Foil Type | Yes | Dropdown of calibrated materials |
-| Roll Label | No | Optional identifier, e.g. `Roll A-01` |
+| Roll Label | Yes | Required; format: `"Brand ProductLine - Color #N"` e.g. `Oracal 651 - Red #1` |
 | Total Weight (g) | Yes | Current scale reading |
 | Notes | No | Free text |
 
@@ -79,7 +79,7 @@ Select a roll by ID and click Delete. Permanent — no undo.
 
 ## Related Features
 
-- [Calibration](calibration.md) — must be set up first; provides `core_weight` and `unit_weight` values
+- [Calibration](foil-types.md) — must be set up first; provides `core_weight` and `unit_weight` values
 - [Roll Check-in](roll-check-in.md) — the day-to-day workflow for updating roll weights after use
-- [Power BI Export](power-bi-export.md) — rolls feed the `dim_foil_inventory` sheet
+- [Power BI Export](overview.md) — rolls feed the `dim_foil_inventory` sheet
 - [Roadmap](../roadmap.md) — foil usage linked to jobs (priority #2)
