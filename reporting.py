@@ -17,13 +17,17 @@ def _add_date_cols(df, date_col="Date"):
 
 def build_fact_jobs():
     sql = """
-        SELECT job_id, date AS Date, customer_name AS Customer,
-               job_type AS Job_Type, status AS Status,
-               charge AS Charge, labour_cost AS Labour_Cost,
-               material_cost AS Material_Cost,
-               subcontractor_cost AS Subcontractor_Cost,
-               notes AS Notes
-        FROM jobs ORDER BY date ASC
+        SELECT j.job_id, j.date AS Date, j.customer_name AS Customer,
+               j.customer_id AS Customer_ID,
+               c.phone AS Customer_Phone, c.email AS Customer_Email,
+               j.job_type AS Job_Type, j.status AS Status,
+               j.charge AS Charge, j.labour_cost AS Labour_Cost,
+               j.material_cost AS Material_Cost,
+               j.subcontractor_cost AS Subcontractor_Cost,
+               j.notes AS Notes
+        FROM jobs j
+        LEFT JOIN customers c ON j.customer_id = c.customer_id
+        ORDER BY j.date ASC
     """
     with engine.connect() as conn:
         df = pd.read_sql(text(sql), conn)

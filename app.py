@@ -13,10 +13,15 @@ db.init_db()
 
 st.title("Milan Designs")
 
-TAB_JOBS, TAB_INV, TAB_CALIB, TAB_CHECKIN, TAB_PBI = st.tabs(["Jobs", "Foil Inventory", "Calibration", "Roll Check-in", "Power BI Export"])
+TAB_JOBS, TAB_CUSTOMERS, TAB_INV, TAB_CALIB, TAB_CHECKIN, TAB_PBI = st.tabs(
+    ["Jobs", "Customers", "Foil Inventory", "Calibration", "Roll Check-in", "Power BI Export"]
+)
 
 with TAB_JOBS:
     st.header("Jobs")
+
+    customer_opts = db.get_customer_options()
+    cust_map = {c["display"]: c["id"] for c in customer_opts}
 
     with st.form("new_job_form", clear_on_submit=True):
         st.subheader("New Job")
@@ -25,7 +30,11 @@ with TAB_JOBS:
         with col1:
             job_date = st.date_input("Date", value=date.today(), format="DD/MM/YYYY")
         with col2:
-            customer_name = st.text_input("Customer Name")
+            if customer_opts:
+                chosen_cust_name = st.selectbox("Customer", list(cust_map.keys()))
+            else:
+                st.warning("No customers yet — add one in the Customers tab first.")
+                chosen_cust_name = None
         with col3:
             job_type = st.selectbox("Job Type", db.JOB_TYPES)
 
@@ -45,12 +54,12 @@ with TAB_JOBS:
         submitted = st.form_submit_button("Save Job")
 
     if submitted:
-        if not customer_name.strip():
-            st.error("Customer name is required.")
+        if not customer_opts or chosen_cust_name is None:
+            st.error("Select a customer. Add customers in the Customers tab first.")
         else:
             j = db.create_job(
                 job_date=job_date,
-                customer_name=customer_name,
+                customer_name=None,
                 job_type=job_type,
                 charge=charge,
                 labour_cost=labour_cost,
@@ -58,6 +67,7 @@ with TAB_JOBS:
                 subcontractor_cost=subcontractor_cost,
                 status=status,
                 notes=notes or None,
+                customer_id=cust_map[chosen_cust_name],
             )
             st.success(f"Job saved — Profit: € {j.gross_profit:,.2f} | Margin: {j.margin_pct:.1f}%")
             st.rerun()
@@ -83,7 +93,21 @@ with TAB_JOBS:
                 with c1:
                     e_date = st.date_input("Date", value=sel["Date"], format="DD/MM/YYYY")
                 with c2:
-                    e_customer = st.text_input("Customer", value=sel["Customer"])
+                    if customer_opts:
+                        cust_names = list(cust_map.keys())
+                        current_cust_id = sel.get("Customer_ID")
+                        if current_cust_id is not None:
+                            current_cust_name = next(
+                                (c["display"] for c in customer_opts if c["id"] == current_cust_id),
+                                cust_names[0],
+                            )
+                            e_cust_idx = cust_names.index(current_cust_name)
+                        else:
+                            e_cust_idx = 0
+                        e_chosen_cust = st.selectbox("Customer", cust_names, index=e_cust_idx)
+                    else:
+                        e_chosen_cust = None
+                        st.text_input("Customer (legacy)", value=sel["Customer"], disabled=True)
                 with c3:
                     e_type = st.selectbox("Job Type", db.JOB_TYPES, index=db.JOB_TYPES.index(sel["Job_Type"]))
 
@@ -106,7 +130,7 @@ with TAB_JOBS:
                 db.update_job(
                     job_id=sel_id,
                     job_date=e_date,
-                    customer_name=e_customer,
+                    customer_id=cust_map[e_chosen_cust] if e_chosen_cust else None,
                     job_type=e_type,
                     charge=e_charge,
                     labour_cost=e_labour,
@@ -124,6 +148,110 @@ with TAB_JOBS:
             st.rerun()
     else:
         st.info("No jobs yet.")
+
+with TAB_CUSTOMERS:
+    st.header("Customers")
+
+    with st.form("new_customer_form", clear_on_submit=True):
+        st.subheader("Add New Customer")
+        nc1, nc2, nc3 = st.columns(3)
+        with nc1:
+            new_name  = st.text_input("Name *")
+        with nc2:
+            new_phone = st.text_input("Phone", placeholder="e.g. +43 664 1234567")
+        with nc3:
+            new_email = st.text_input("Email", placeholder="e.g. customer@example.com")
+        add_cust = st.form_submit_button("Save Customer")
+
+    if add_cust:
+        if not new_name.strip():
+            st.error("Customer name is required.")
+        else:
+            db.create_customer(
+                name=new_name,
+                phone=new_phone or None,
+                email=new_email or None,
+            )
+            st.success(f"Customer '{new_name.strip()}' saved.")
+            st.rerun()
+
+    st.divider()
+    st.subheader("All Customers")
+
+    customers = db.read_all_customers()
+
+    if customers:
+        st.dataframe(pd.DataFrame(customers), height=300)
+
+        st.divider()
+        st.subheader("Edit or Delete a Customer")
+
+        cust_id_map = {
+            f"[{c['Customer_ID']}] {c['Name']}": c["Customer_ID"]
+            for c in customers
+        }
+        sel_cust_label = st.selectbox("Select Customer", list(cust_id_map.keys()))
+        sel_cust_id    = cust_id_map[sel_cust_label]
+        sel_cust       = next(c for c in customers if c["Customer_ID"] == sel_cust_id)
+
+        with st.expander("Edit selected customer"):
+            with st.form("edit_customer_form"):
+                ec1, ec2, ec3 = st.columns(3)
+                with ec1:
+                    e_name  = st.text_input("Name *", value=sel_cust["Name"])
+                with ec2:
+                    e_phone = st.text_input("Phone",  value=sel_cust["Phone"])
+                with ec3:
+                    e_email = st.text_input("Email",  value=sel_cust["Email"])
+                save_cust_edit = st.form_submit_button("Save Changes")
+
+            if save_cust_edit:
+                if not e_name.strip():
+                    st.error("Customer name is required.")
+                else:
+                    db.update_customer(
+                        customer_id=sel_cust_id,
+                        name=e_name,
+                        phone=e_phone,
+                        email=e_email,
+                    )
+                    st.success("Customer updated.")
+                    st.rerun()
+
+        if st.button("Delete Customer"):
+            try:
+                db.delete_customer(sel_cust_id)
+                st.success("Customer deleted.")
+                st.rerun()
+            except RuntimeError as exc:
+                st.error(str(exc))
+
+        st.divider()
+        st.subheader("Customer Profile")
+
+        prof_label = st.selectbox(
+            "Select customer to view profile",
+            list(cust_id_map.keys()),
+            key="profile_selectbox",
+        )
+        prof_id = cust_id_map[prof_label]
+        profile = db.get_customer_profile(prof_id)
+
+        col_a, col_b, col_c = st.columns(3)
+        col_a.metric("Total Jobs",  profile["job_count"])
+        col_b.metric("Total Spend", f"€ {profile['total_spend']:,.2f}")
+        with col_c:
+            st.caption("Phone")
+            st.write(profile["phone"] or "—")
+            st.caption("Email")
+            st.write(profile["email"] or "—")
+
+        if profile["jobs"]:
+            st.dataframe(pd.DataFrame(profile["jobs"]), height=350)
+        else:
+            st.info("No jobs linked to this customer yet.")
+    else:
+        st.info("No customers yet. Add one above.")
 
 with TAB_CALIB:
     st.header("Calibration")

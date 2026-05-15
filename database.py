@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, event, Column, Integer, String, Float, Date, Text, CheckConstraint, ForeignKey
+from sqlalchemy import create_engine, event, Column, Integer, String, Float, Date, Text, CheckConstraint, ForeignKey, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, relationship
 from datetime import date
 
@@ -34,6 +34,17 @@ FOIL_BRANDS = {
 }
 
 
+class Customer(Base):
+    __tablename__ = "customers"
+
+    customer_id = Column(Integer,     primary_key=True, autoincrement=True)
+    name        = Column(String(200), nullable=False)
+    phone       = Column(String(50),  nullable=True)
+    email       = Column(String(200), nullable=True)
+
+    jobs = relationship("Job", back_populates="customer", foreign_keys="Job.customer_id")
+
+
 class Job(Base):
     __tablename__ = "jobs"
     __table_args__ = (
@@ -53,6 +64,9 @@ class Job(Base):
     material_cost      = Column(Float,       nullable=False, default=0.0)
     subcontractor_cost = Column(Float,       nullable=False, default=0.0)
     notes              = Column(Text,        nullable=True)
+    customer_id        = Column(Integer,     ForeignKey("customers.customer_id", ondelete="SET NULL"), nullable=True)
+
+    customer = relationship("Customer", back_populates="jobs", foreign_keys=[customer_id])
 
     @property
     def total_cost(self):
@@ -103,8 +117,28 @@ class FoilRoll(Base):
     foil_type = relationship("FoilType", back_populates="rolls")
 
 
+def run_migrations():
+    from sqlalchemy import inspect as sa_inspect
+    with engine.begin() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS customers (
+                customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name        VARCHAR(200) NOT NULL,
+                phone       VARCHAR(50),
+                email       VARCHAR(200)
+            )
+        """))
+        inspector = sa_inspect(conn)
+        existing_cols = [c["name"] for c in inspector.get_columns("jobs")]
+        if "customer_id" not in existing_cols:
+            conn.execute(text(
+                "ALTER TABLE jobs ADD COLUMN customer_id INTEGER REFERENCES customers(customer_id)"
+            ))
+
+
 def init_db():
     Base.metadata.create_all(bind=engine)
+    run_migrations()
     print("Database ready.")
 
 if __name__ == "__main__":
@@ -122,11 +156,20 @@ def _calculate_length(total_weight, core_weight, unit_weight):
 
 def create_job(job_date, customer_name, job_type, charge,
                labour_cost=0.0, material_cost=0.0,
-               subcontractor_cost=0.0, status="Pending", notes=None):
+               subcontractor_cost=0.0, status="Pending", notes=None,
+               customer_id=None):
     with SessionLocal() as session:
+        if customer_id is not None:
+            c = session.get(Customer, customer_id)
+            if c is None:
+                raise ValueError(f"Customer {customer_id} not found.")
+            resolved_name = c.name
+        else:
+            resolved_name = customer_name.strip() if customer_name else ""
         job = Job(
             date=job_date,
-            customer_name=customer_name.strip(),
+            customer_name=resolved_name,
+            customer_id=customer_id,
             job_type=job_type,
             status=status,
             charge=float(charge),
@@ -148,6 +191,7 @@ def read_all_jobs():
             {
                 "Job_ID":             r.job_id,
                 "Date":               r.date,
+                "Customer_ID":        r.customer_id,
                 "Customer":           r.customer_name,
                 "Job_Type":           r.job_type,
                 "Status":             r.status,
@@ -166,7 +210,8 @@ def read_all_jobs():
 
 def update_job(job_id, job_date=None, customer_name=None, job_type=None,
                charge=None, labour_cost=None, material_cost=None,
-               subcontractor_cost=None, status=None, notes=None):
+               subcontractor_cost=None, status=None, notes=None,
+               customer_id=None):
     with SessionLocal() as session:
         job = session.get(Job, job_id)
         if job is None:
@@ -180,6 +225,12 @@ def update_job(job_id, job_date=None, customer_name=None, job_type=None,
         if material_cost      is not None: job.material_cost      = float(material_cost)
         if subcontractor_cost is not None: job.subcontractor_cost = float(subcontractor_cost)
         if notes              is not None: job.notes              = notes
+        if customer_id is not None:
+            c = session.get(Customer, customer_id)
+            if c is None:
+                raise ValueError(f"Customer {customer_id} not found.")
+            job.customer_id   = customer_id
+            job.customer_name = c.name
         session.commit()
         session.refresh(job)
         return job
@@ -205,6 +256,100 @@ def get_job_options():
             }
             for r in rows
         ]
+
+
+def create_customer(name, phone=None, email=None):
+    with SessionLocal() as session:
+        c = Customer(
+            name=name.strip(),
+            phone=phone.strip() if phone else None,
+            email=email.strip() if email else None,
+        )
+        session.add(c)
+        session.commit()
+        session.refresh(c)
+        return c
+
+
+def read_all_customers():
+    with SessionLocal() as session:
+        rows = session.query(Customer).order_by(Customer.name).all()
+        return [
+            {
+                "Customer_ID": r.customer_id,
+                "Name":        r.name,
+                "Phone":       r.phone or "",
+                "Email":       r.email or "",
+            }
+            for r in rows
+        ]
+
+
+def update_customer(customer_id, name=None, phone=None, email=None):
+    with SessionLocal() as session:
+        c = session.get(Customer, customer_id)
+        if c is None:
+            raise ValueError(f"Customer {customer_id} not found.")
+        if name  is not None: c.name  = name.strip()
+        if phone is not None: c.phone = phone.strip() if phone.strip() else None
+        if email is not None: c.email = email.strip() if email.strip() else None
+        session.commit()
+        session.refresh(c)
+        return c
+
+
+def delete_customer(customer_id):
+    with SessionLocal() as session:
+        c = session.get(Customer, customer_id)
+        if c is None:
+            return False
+        linked = session.query(Job).filter(Job.customer_id == customer_id).count()
+        if linked > 0:
+            raise RuntimeError(f"Cannot delete: {linked} job(s) are linked to this customer.")
+        session.delete(c)
+        session.commit()
+        return True
+
+
+def get_customer_options():
+    with SessionLocal() as session:
+        rows = session.query(Customer).order_by(Customer.name).all()
+        return [{"id": r.customer_id, "display": r.name} for r in rows]
+
+
+def get_customer_profile(customer_id):
+    with SessionLocal() as session:
+        c = session.get(Customer, customer_id)
+        if c is None:
+            raise ValueError(f"Customer {customer_id} not found.")
+        jobs = (
+            session.query(Job)
+            .filter(Job.customer_id == customer_id)
+            .order_by(Job.date.desc())
+            .all()
+        )
+        job_rows = [
+            {
+                "Job_ID":             j.job_id,
+                "Date":               j.date,
+                "Job_Type":           j.job_type,
+                "Status":             j.status,
+                "Charge":             j.charge,
+                "Total_Cost":         j.total_cost,
+                "Gross_Profit":       j.gross_profit,
+                "Margin_Pct":         j.margin_pct,
+            }
+            for j in jobs
+        ]
+        return {
+            "customer_id": c.customer_id,
+            "name":        c.name,
+            "phone":       c.phone,
+            "email":       c.email,
+            "jobs":        job_rows,
+            "total_spend": round(sum(j.charge for j in jobs), 2),
+            "job_count":   len(jobs),
+        }
 
 
 def create_foil_type(material_name, core_weight, unit_weight, notes=None):
