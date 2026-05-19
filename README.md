@@ -58,23 +58,27 @@ The following features are planned following an upcoming meeting with the owner:
 
 **Prerequisites:** Python 3.12 or later — download from [python.org](https://www.python.org/downloads/). On Windows, tick "Add Python to PATH" during install.
 
-### Windows
+### Step 1 — Copy the files
 
-1. Copy the project folder to the new machine
-2. Also copy `shop_app.db` into the same folder (this is the live database — it is not included in the repo)
-3. Double-click `setup.bat`
+Copy the project folder to the new machine. Also copy `shop_app.db` into the same folder — this is the live database and is not included in the repo.
 
-On first run it will create the virtual environment, install all dependencies, and open `.streamlit/secrets.toml` in Notepad so you can set the passwords. Run `setup.bat` again to launch the app.
+### Step 2 — Run the installer (once only)
 
-### Mac
-
-Open Terminal and run:
-
+**Mac** — open Terminal and run:
 ```bash
-python3 "/Users/your-username/Desktop/Milan Designs/start.py"
+python3 "/Users/your-username/Desktop/Milan Designs/install.py"
 ```
 
-On first run it will create the virtual environment, install all dependencies, and open `.streamlit/secrets.toml` so you can set the passwords. Run the same command again to launch the app.
+**Windows** — open Command Prompt and run:
+```
+python "C:\Users\your-username\Desktop\Milan Designs\install.py"
+```
+
+The installer will set up the virtual environment, install all dependencies, handle the secrets file, and create a **Milan Designs** launcher on the Desktop.
+
+### Step 3 — Daily use
+
+Double-click **Milan Designs** on the Desktop. The browser opens automatically.
 
 > **Power BI note:** Power BI Desktop is Windows-only. The Excel export from the Overview tab works on both platforms, but the `.pbix` dashboard file can only be opened on Windows.
 
@@ -82,10 +86,4 @@ On first run it will create the virtual environment, install all dependencies, a
 
 ## How to Run (existing install)
 
-```bash
-# Windows
-setup.bat
-
-# Mac
-python3 "/Users/your-username/Desktop/Milan Designs/start.py"
-```
+Double-click **Milan Designs** on the Desktop.

@@ -1,6 +1,9 @@
 @echo off
 cd /d "%~dp0"
 echo.
+echo  First time? Run: python install.py
+echo  That creates a Desktop launcher so you never need this window again.
+echo.
 echo  Milan Designs - Setup ^& Launch
 echo  ================================
 echo.
