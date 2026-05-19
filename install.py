@@ -14,10 +14,11 @@ print(" ==================================")
 print()
 
 # Python version check
-if sys.version_info < (3, 8):
-    print(" ERROR: Python 3.8 or later is required.")
+if sys.version_info < (3, 12):
+    print(" ERROR: Python 3.12 or later is required.")
     print(f" You have Python {sys.version_info.major}.{sys.version_info.minor}.")
     print(" Download from: https://www.python.org/downloads/")
+    print(" Install it, then run this script again.")
     input(" Press Enter to close...")
     sys.exit(1)
 
