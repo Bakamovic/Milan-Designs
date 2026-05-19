@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\djana\\\\Desktop\\\\Milan Designs\" -Recurse -File)",
+      "Bash(Select-Object -First 30)",
+      "Bash(python -c \"import database as db; print\\('database.py OK'\\)\")",
+      "Bash(python -c \"import reporting; print\\('reporting.py OK'\\)\")",
+      "Bash(python -c ' *)",
+      "Bash(git -C \"c:\\\\Users\\\\djana\\\\Desktop\\\\Milan Designs\" status)",
+      "Bash(git -C \"c:\\\\Users\\\\djana\\\\Desktop\\\\Milan Designs\" log --oneline -5)",
+      "Bash(git -C \"c:\\\\Users\\\\djana\\\\Desktop\\\\Milan Designs\" add app.py database.py reporting.py)",
+      "Bash(git -C 'c:\\\\Users\\\\djana\\\\Desktop\\\\Milan Designs' commit -m ' *)",
+      "Bash(git -C \"c:\\\\Users\\\\djana\\\\Desktop\\\\Milan Designs\" push)",
+      "Bash(python seed_data.py)",
+      "Bash(python -c \"import ast, sys; ast.parse\\(open\\('app.py'\\).read\\(\\)\\); print\\('app.py syntax OK'\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "PowerShell(cd \"c:\\\\Users\\\\djana\\\\Desktop\\\\Milan Designs\"; & \"venv\\\\Scripts\\\\pip.exe\" install -r requirements.txt --quiet; echo \"Exit code: $LASTEXITCODE\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\djana\\\\Desktop\\\\Milan Designs\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(git pull *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
