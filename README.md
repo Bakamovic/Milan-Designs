@@ -68,12 +68,13 @@ On first run it will create the virtual environment, install all dependencies, a
 
 ### Mac
 
+Open Terminal and run:
+
 ```bash
-chmod +x setup.sh   # once only, to make the script executable
-./setup.sh
+python3 "/Users/your-username/Desktop/Milan Designs/start.py"
 ```
 
-On first run it will create the virtual environment, install all dependencies, and open `.streamlit/secrets.toml` so you can set the passwords. Run `./setup.sh` again to launch the app.
+On first run it will create the virtual environment, install all dependencies, and open `.streamlit/secrets.toml` so you can set the passwords. Run the same command again to launch the app.
 
 > **Power BI note:** Power BI Desktop is Windows-only. The Excel export from the Overview tab works on both platforms, but the `.pbix` dashboard file can only be opened on Windows.
 
@@ -86,5 +87,5 @@ On first run it will create the virtual environment, install all dependencies, a
 setup.bat
 
 # Mac
-./setup.sh
+python3 "/Users/your-username/Desktop/Milan Designs/start.py"
 ```
