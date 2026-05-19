@@ -50,5 +50,5 @@ fi
 echo " Starting app..."
 echo " Press Ctrl+C here to stop the app."
 echo ""
-sleep 2 && open "http://localhost:8501" &
+(while ! nc -z localhost 8501 2>/dev/null; do sleep 1; done && open "http://localhost:8501") &
 streamlit run app.py

@@ -50,5 +50,5 @@ if not exist ".streamlit\secrets.toml" (
 echo  Starting app...
 echo  Press Ctrl+C here to stop the app.
 echo.
-start "" "http://localhost:8501"
+start /b powershell -WindowStyle Hidden -Command "Start-Sleep 6; Start-Process 'http://localhost:8501'"
 streamlit run app.py
