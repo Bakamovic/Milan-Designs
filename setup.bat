@@ -48,7 +48,7 @@ if not exist ".streamlit\secrets.toml" (
 
 :: Launch the app
 echo  Starting app...
-echo  Open http://localhost:8501 in your browser.
 echo  Press Ctrl+C here to stop the app.
 echo.
+start "" "http://localhost:8501"
 streamlit run app.py
